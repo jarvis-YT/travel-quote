@@ -1,10 +1,10 @@
-/* 業務員資料（昶勝軍共用）：旅平險、意外險兩個報價工具同網域（jarvis-yt.github.io；115/10/12 由 s193yt.github.io 搬來），
+/* 業務員資料（昶勝軍共用）：旅平險、意外險兩個報價工具同網域（jarvis-yt.github.io；115/10/12 搬家），
  * 共用同一個 localStorage key，任一工具填一次、另一工具自動帶入。
  * 品牌固定：富邦人壽 高秉通訊處・昶勝軍；姓名／職級／電話由各業務員自行填寫（只存在自己的瀏覽器）。 */
 (function (g) {
   'use strict';
   var KEY = 'cs-agent-profile-v1';
-  /* 115/10/12 搬家：舊網址 s193yt.github.io 的轉跳頁會把舊瀏覽器裡的業務員資料以 ?ap= 帶過來（只有姓名／職級／電話）。
+  /* 115/10/12 搬家：舊網址的轉跳頁會把舊瀏覽器裡的業務員資料以 ?ap= 帶過來（只有姓名／職級／電話）。
    * 本機尚未填寫時才匯入；匯入後立刻把 ?ap= 從網址移除，避免分享連結時帶出去。 */
   try {
     var sp = new URLSearchParams(g.location.search), ap = sp.get('ap');
@@ -13,7 +13,7 @@
         var o = JSON.parse(decodeURIComponent(escape(g.atob(ap))));
         if (o && typeof o === 'object' && (o.name || o.phone)) {
           var c = function (s, m) { return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, m); };
-          g.localStorage.setItem(KEY, JSON.stringify({ name: c(o.name, 20), title: c(o.title, 20), phone: c(o.phone, 24), updatedAt: new Date().toISOString(), migratedFrom: 's193yt' }));
+          g.localStorage.setItem(KEY, JSON.stringify({ name: c(o.name, 20), title: c(o.title, 20), phone: c(o.phone, 24), updatedAt: new Date().toISOString(), migratedFrom: "old-site" }));
         }
       }
       sp.delete('ap');
