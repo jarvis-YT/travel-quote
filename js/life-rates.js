@@ -76,7 +76,9 @@
     var days = Number(quote.days);
     var rateType = quote.lifeRateType || 'agency';
     var region = quote.lifeRegion || guessLifeRegion(quote.destination);
-    var oaa = !!life.oaa;
+    // fr14：GPTA 試算確認 AT1／MR／OH1 費率全球一致；只有 OAA（海外醫療專機運送）限亞洲14國
+    var oaa = !!life.oaa && region === 'asia14';
+    var regionTxt = region === 'asia14' ? '亞洲14國' : '國外其他（無 OAA）';
     // 年齡（足歲）優先；舊稿無年齡才用 ageBand
     var ai = (global.TQ && TQ.ageInfo) ? TQ.ageInfo(quote.age) : { set: false, valid: false };
     if (ai.set && !ai.valid) return { found: false, tip: ai.error };
@@ -88,7 +90,6 @@
       var cover15 = '未滿15歲自動範圍：旅行社／快易保 × 亞洲14國 × MRC 60萬 × OH1 60／120萬 × OAA 可選 × 1～30天';
       if (!isFinite(days) || days <= 0) return { found: false, tip: '請先填投保天數' };
       if (rateType !== 'agency') return { found: false, tip: '尚無此費率類型（' + rateType + '）。' + cover15 + '；請用 GPTA 試算後手填' };
-      if (region !== 'asia14') return { found: false, tip: '尚無「' + region + '」地區未滿15歲費率（OAA 亦僅限亞洲14國）。' + cover15 + '；請用 GPTA 試算後手填' };
       if (days > 30) return { found: false, tip: '離線表僅到 30 天，目前 ' + days + ' 天請用 GPTA 試算後手填' };
       for (var u = 0; u < RATES_U15.length; u++) {
         var ru = RATES_U15[u];
@@ -122,12 +123,9 @@
 
     // 分項費率加總（旅行社 AT1＋MR＋OH1(亞洲14國)＋OAA）
     var CR = global.LIFE_COMPONENT_RATES;
-    var coverTip = '自動範圍：旅行社費率 × 國外亞洲14國 × 15歲以上 × 1～180天 × AT1 表列保額（20～2000萬）× MR 表列（2～250萬）× OH1 10～200萬（每10）／250萬（1～30天）或 10/20/30/50/60/100/120/150/200/250萬（31～180天）× OAA 可選';
+    var coverTip = '自動範圍：旅行社費率 × 全球（OAA 限亞洲14國）× 15歲以上 × 1～180天 × AT1 表列保額（20～2000萬）× MR 表列（2～250萬）× OH1 10～200萬（每10）／250萬（1～30天）或 10/20/30/50/60/100/120/150/200/250萬（31～180天）× OAA 可選';
     if (rateType !== 'agency') {
       return { found: false, tip: '尚無此費率類型（' + rateType + '）。' + coverTip + '；請用 GPTA 試算後手填' };
-    }
-    if (region !== 'asia14') {
-      return { found: false, tip: '「國外其他」（歐美、申根等）海外突發疾病 OH1 尚無官方費率表；請用 GPTA 試算後手填（AT1、MR 可查表，OH1 依地區不同）' };
     }
     var adultBand = ai.valid ? ai.lifeRates === 'adult' : (ageBand === '18-65' || ageBand === '15-17');
     if (!adultBand) {
@@ -159,7 +157,7 @@
       premium: total,
       source: '富邦人壽旅行社費率表（分項加總）',
       parts: { at1: pAT1, mr: pMR, oh1: pOH1, oaa: pOAA },
-      tip: '自動：' + total.toLocaleString('en-US') + ' 元（旅行社費率／亞洲14國／' + days + '天：AT1 ' + at1 + '萬 ' + pAT1 +
+      tip: '自動：' + total.toLocaleString('en-US') + ' 元（旅行社費率／' + regionTxt + '／' + days + '天：AT1 ' + at1 + '萬 ' + pAT1 +
         '＋MR ' + em.mr + '萬 ' + pMR + '＋OH1 ' + em.oh1 + '萬 ' + pOH1 + (oaa ? '＋OAA ' + pOAA : '') + '）'
     };
   }

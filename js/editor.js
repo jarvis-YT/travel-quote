@@ -374,7 +374,7 @@
       else if (st.legacy) subTxt = '沿用原報價天數（舊版連結）；依新制（結束時間＝出發時間）應為 ' + st.newDays + ' 天，修改日期／時間／天數即改依新制重算';
       else if (st.noTime) subTxt = '⚠ 出發時間未填：請填班機實際起飛時間（結束時間同出發時間）';
       else subTxt = '自出發時間起算，每 24 小時一天；結束時間＝出發時間 ' + TQ.fmtTime(Q.startTime);
-      if (st.days > 30) { soft = true; warn = '⚠ 目前 ' + st.days + ' 天：人壽（亞洲14國）可自動算到 180 天；產險成人 200／500／1000萬可到 60 天（300／1500萬 2～30 天；兒童 2～10 天）、未滿15歲人壽僅 1～30 天，其餘請以 GPTA／產險試算後手填'; }
+      if (st.days > 30) { soft = true; warn = '⚠ 目前 ' + st.days + ' 天：人壽可自動算到 180 天；產險成人 200／500／1000萬可到 60 天（300／1500萬 2～30 天；兒童 2～10 天）、未滿15歲人壽僅 1～30 天，其餘請以 GPTA／產險試算後手填'; }
     }
     if (v) v.textContent = txt;
     if (sub) { sub.textContent = subTxt; sub.classList.toggle('warn', !!(st.legacy || (st.noTime && !st.kept))); }
@@ -493,8 +493,8 @@
       Q.plans.forEach(function (p) {
         if (p.life && p.life.enabled) {
           p.life.oaa = false;
-          // 離線表無「國外其他」費率 → 清掉自動壽險保費，改手填
-          if (p.life._premAuto || true) { p.life.premium = null; p.life._premAuto = false; }
+          // fr14：國外其他同費率（無 OAA）→ 重新自動查表
+          if (p.life._premAuto) { p.life.premium = null; p.life._premAuto = false; }
         }
         // 對齊申根可選保額
         if ([200, 300, 500, 1000, 1500].indexOf(Number(p.property.deathWan)) < 0) p.property.deathWan = 500;
@@ -600,9 +600,7 @@
           p.life._premAuto = true;
         } else {
           if (p.life._premAuto || lr.overCap || lr.noRates) p.life.premium = null;
-          p.life._premTip = (Q.schengen && !lr.overCap && !lr.noRates && TQ.ageInfo(Q.age).valid !== false)
-            ? '申根人壽需 GPTA「國外其他」費率（OH1 官方表僅亞洲14國）；請手填保費'
-            : lr.tip;
+          p.life._premTip = lr.tip;
           p.life._premAuto = false;
         }
       } else if (!window.LIFE_RATES) {
@@ -749,13 +747,13 @@
       var cap = ai.valid ? ai.at1Max : 2000;
       h += selectField('人壽保額 AT1（萬）', b + 'life.at1Wan', withCurrent(at1Options(cap), plan.life.at1Wan, '超過年齡上限 ' + cap + ' 萬'), {
         hint: (ai.valid ? ai.label + '：AT1 100～' + cap + ' 萬' : '以 50 萬為單位（100～2000）') + '；OH1／MR 依下方人壽組合自動（進階可改）' +
-          '；亞洲14國保費依旅行社費率表自動加總（AT1 表列保額；兩種人壽組合；1～180天），國外其他請手填', auto: true
+          '；保費依旅行社費率表自動加總（全球同費率，OAA 限亞洲14國；AT1 表列保額；兩種人壽組合；1～180天）', auto: true
       });
       var cb = TQ.lifeCombo(plan.life);
       h += '<label>人壽組合（DM 註1／註2）<select data-k="' + b + 'life.combo">' +
         '<option value="basic"' + (cb === 'basic' ? ' selected' : '') + '>國外旅遊適用（OH1／MR＝AT1×10%）</option>' +
         '<option value="plus"' + (cb === 'plus' ? ' selected' : '') + '>國外旅遊醫療加值（OH1／MR＝AT1×20%，上限250萬）</option>' +
-        '</select><span class="hint auto">目前 OH1／MR 預設 ' + TQ.comma(TQ.defaultOh1MrWan(plan.life, Q)) + ' 萬；醫療加值無離線費率，保費需 GPTA 手填</span></label>';
+        '</select><span class="hint auto">目前 OH1／MR 預設 ' + TQ.comma(TQ.defaultOh1MrWan(plan.life, Q)) + ' 萬；保費依費率表自動加總</span></label>';
     }
     if (!hasProp) {
       // 純人壽：不顯示產險欄位
@@ -794,7 +792,9 @@
       (child ? '' : field('OH1（萬）', b + 'life.oh1Wan', { hint: '空白＝依人壽組合', auto: true }) +
         field('MR（萬）', b + 'life.mrWan', { hint: '空白＝依人壽組合', auto: true })) +
       '</div>';
-    h += '<label class="check" style="margin-top:8px"><input type="checkbox" data-k="' + b + 'life.oaa"> OAA（限亞洲14國）</label>';
+    var oaaOk = !Q.schengen && Q.lifeRegion === 'asia14';
+    if (!oaaOk && plan.life) plan.life.oaa = false;
+    h += '<label class="check" style="margin-top:8px"' + (oaaOk ? '' : ' title="OAA 僅限亞洲14國"') + '><input type="checkbox" data-k="' + b + 'life.oaa"' + (oaaOk ? '' : ' disabled') + '> OAA 海外醫療專機運送（限亞洲14國）' + (oaaOk ? '' : '<span class="hint">（此目的地不適用，保費不含 OAA）</span>') + '</label>';
     h += '<div class="grid g3" style="margin-top:8px">' +
       field('人壽住院（元）', b + 'life.hospitalYuan', { hint: '空白＝自動', auto: true }) +
       field('人壽門診每日（元）', b + 'life.outpatientYuan', { hint: '空白＝自動', auto: true }) +
@@ -967,6 +967,7 @@
         if (window.LIFE_RATES) {
           var lr = LIFE_RATES.guessLifeRegion(Q.destination);
           Q.lifeRegion = lr;
+          Q.plans.forEach(function (pp) { if (pp.life && pp.life.enabled) pp.life.oaa = (lr === 'asia14'); });
           var sel = form.querySelector('[data-k="lifeRegion"]');
           if (sel) sel.value = lr;
         }
@@ -1066,7 +1067,7 @@
     if (dsC.days > 180 && Q.plans.some(function (p) { return p.life && p.life.enabled; })) add('err', '共 ' + dsC.days + ' 天：Go安行國外旅遊最高投保天數為 180 天（DM 第2頁）。');
     var riC = TQ.regionInfo(Q.destination);
     if (riC.ambiguous.length) add('warn', '目的地含「' + riC.ambiguous.join('、') + '」：DM 未明列是否屬「美國、加拿大」或「歐洲」，人壽 OH1 地區限額預設 100%；如確認適用請到「行程進階」手動調整。');
-    if (dsC.days > 30) add('warn', '共 ' + dsC.days + ' 天：人壽亞洲14國可自動算到 180 天；產險成人 200／500／1000萬可到 60 天（300／1500萬 2～30 天；兒童 2～10 天）、未滿15歲人壽僅 1～30 天，其餘請以 GPTA／產險試算後手填。');
+    if (dsC.days > 30) add('warn', '共 ' + dsC.days + ' 天：人壽可自動算到 180 天；產險成人 200／500／1000萬可到 60 天（300／1500萬 2～30 天；兒童 2～10 天）、未滿15歲人壽僅 1～30 天，其餘請以 GPTA／產險試算後手填。');
     Q.plans.forEach(function (p) {
       var n = p.name || '';
       if (p.life && p.life.enabled) {
@@ -1105,9 +1106,25 @@
   }
 
   var saveTimer;
+  /** fr14：OAA 僅限亞洲14國；其他地區自動取消並停用勾選（AT1／MR／OH1 全球同費率） */
+  var lastOaaRegion = null;
+  function syncOaaAvailability() {
+    var ok = !Q.schengen && Q.lifeRegion === 'asia14';
+    var regionKey = ok ? 'asia14' : 'other';
+    Q.plans.forEach(function (p, i) {
+      if (!p.life) return;
+      if (!ok) p.life.oaa = false;
+      else if (lastOaaRegion === 'other' && p.life.enabled) p.life.oaa = true;
+      var cb = form.querySelector('[data-k="plans.' + i + '.life.oaa"]');
+      if (cb) { cb.disabled = !ok; cb.checked = !!p.life.oaa; }
+    });
+    lastOaaRegion = regionKey;
+  }
+
   function update() {
     Q.agent = agentForQuote();
     updateDomesticWarning();
+    syncOaaAvailability();
     refreshDerived();
     TQ.renderQuote(scrubForSave(Q), preview);
     checks();

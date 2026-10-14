@@ -302,7 +302,7 @@
       L.hospital = isSet(life.hospitalYuan) ? num(life.hospitalYuan) : L.oh1 * LIFE_OH1_RATIO.hospital * region;
       L.outpatient = isSet(life.outpatientYuan) ? num(life.outpatientYuan) : L.oh1 * LIFE_OH1_RATIO.outpatient * region;
       L.er = isSet(life.erYuan) ? num(life.erYuan) : L.oh1 * LIFE_OH1_RATIO.er * region;
-      L.oaa = !!life.oaa;
+      L.oaa = !!life.oaa && (quote.lifeRegion || 'asia14') === 'asia14';
       L.premium = num(life.premium);
     } else if (L.enabled) {
       L.at1 = num(life.at1Wan) * 10000;
@@ -313,7 +313,7 @@
       L.hospital = isSet(life.hospitalYuan) ? num(life.hospitalYuan) : L.oh1 * LIFE_OH1_RATIO.hospital * region;
       L.outpatient = isSet(life.outpatientYuan) ? num(life.outpatientYuan) : L.oh1 * LIFE_OH1_RATIO.outpatient * region;
       L.er = isSet(life.erYuan) ? num(life.erYuan) : L.oh1 * LIFE_OH1_RATIO.er * region;
-      L.oaa = !!life.oaa;
+      L.oaa = !!life.oaa && (quote.lifeRegion || 'asia14') === 'asia14';
       L.premium = num(life.premium);
     } else {
       L.at1 = L.oh1 = L.mr = L.hospital = L.outpatient = L.er = L.premium = 0; L.oaa = false;
@@ -929,7 +929,7 @@
     }
     if (quote.schengen) {
       notes.push('申根行程：' + (anyProp ? '產險已套用計畫二；' : '') + '請隨身攜帶申根地區醫療旅遊保險英文投保憑證。' +
-        (anyLife ? '人壽為國外其他地區（OAA 不適用），保費請以 GPTA 試算為準。' : ''));
+        (anyLife ? '人壽為國外其他地區（不含 OAA 海外醫療專機運送）。' : ''));
     }
     var childQ = isChildQuote(quote);
     if (childQ) {
