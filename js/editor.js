@@ -1,4 +1,4 @@
-/* 報價編輯器（昶勝軍版）：填寫 → 即時預覽 → 下載三方案總表圖／複製客戶頁連結（草稿自動存在瀏覽器）
+/* 報價編輯器：填寫 → 即時預覽 → 下載三方案總表圖／複製客戶頁連結（草稿自動存在瀏覽器）
  * 改編自同仁的旅平險三方案報價工具；費率資料沿用原版（GPTA 離線表＋新快樂旅綜+ DM），未自行新增費率。
  * 產險保費：新快樂旅綜+ DM（天數 2～10）自動帶入；人壽保費：life-rates.js 精確相符才自動帶入。
  */
@@ -1252,7 +1252,7 @@
     if (!m.length && !smp) return '';
     var card = document.getElementById('agentCard');
     if (card) { card.classList.add('flash'); setTimeout(function () { card.classList.remove('flash'); }, 1600); }
-    return smp ? '⚠ 業務員資料仍是範例（' + AgentProfile.SAMPLE.name + '）' : '⚠ 尚未填寫業務員' + m.join('、') + '，客戶只會看到「昶勝軍」';
+    return smp ? '⚠ 業務員資料仍是範例（' + AgentProfile.SAMPLE.name + '）' : '⚠ 尚未填寫業務員' + m.join('、') + '，客戶頁不會顯示業務員';
   }
   document.getElementById('btnSummaryPng').addEventListener('click', function () {
     if (blockIfDomestic()) return;

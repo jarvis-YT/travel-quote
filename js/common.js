@@ -4,32 +4,32 @@
 (function (global) {
   'use strict';
 
-  /* ---------- 品牌（客戶頁頁首、總表圖）：昶勝軍 logo＋兩行標題；不含「內部使用」標記 ---------- */
+  /* ---------- 品牌（客戶頁頁首、總表圖）：文字標題；不含「內部使用」標記 ---------- */
   var ASSET_V = (function () {
     try { var m = /[?&]v=([^&#]+)/.exec((document.currentScript && document.currentScript.src) || ''); return m ? m[1] : ''; } catch (e) { return ''; }
   })();
   var BRAND = {
-    slogan: '富邦人壽 高秉通訊處・昶勝軍',
+    slogan: '',
     title: '旅平險組合方案試算報價系統',
-    logo: 'img/logo.png' + (ASSET_V ? '?v=' + ASSET_V : ''),
-    logoAlt: '昶勝軍'
+    logo: '',
+    logoAlt: ''
   };
   // 預先載入 logo（總表圖下載時不會出現空白 logo）
   var brandLogoReady = (typeof Image === 'undefined') ? Promise.resolve() : new Promise(function (resolve) {
     var im = new Image();
     im.onload = im.onerror = function () { resolve(); };
-    im.src = BRAND.logo;
+    if (BRAND.logo) im.src = BRAND.logo; else resolve();
   });
   function renderBrand(prefix) {
     prefix = prefix || 'brand';
-    return '<div class="' + prefix + '-bar"><img class="' + prefix + '-logo" src="' + BRAND.logo + '" alt="' + BRAND.logoAlt + '" width="48" height="48">' +
-      '<div class="' + prefix + '-text"><div class="' + prefix + '-slogan">' + BRAND.slogan + '</div>' +
+    return '<div class="' + prefix + '-bar">' +
+      '<div class="' + prefix + '-text">' + (BRAND.slogan ? '<div class="' + prefix + '-slogan">' + BRAND.slogan + '</div>' : '') +
       '<div class="' + prefix + '-title">' + BRAND.title + '</div></div></div>';
   }
 
-  // 簽名：品牌固定「富邦人壽 高秉通訊處・昶勝軍」；姓名／職級／電話由業務員在編輯器「業務員資料」填寫（隨分享連結帶給客戶）
-  // 沒有業務員資料的舊連結 → 只顯示「昶勝軍」，不帶任何人名／電話
-  var DEFAULT_AGENT = { unit: '高秉通訊處・昶勝軍', name: '', title: '', phone: '' };
+  // 簽名：姓名／職級／電話由業務員在編輯器「業務員資料」填寫（隨分享連結帶給客戶）
+  // 沒有業務員資料的舊連結 → 不帶任何人名／電話
+  var DEFAULT_AGENT = { unit: '', name: '', title: '', phone: '' };
   function agentStr(v, max) { return (v === undefined || v === null) ? '' : String(v).replace(/[\u0000-\u001f]/g, '').trim().slice(0, max); }
   function agentOf(quote) {
     var a = (quote && quote.agent && typeof quote.agent === 'object') ? quote.agent : {};
@@ -595,7 +595,7 @@
     return items;
   }
 
-  /* ---------- DM 版面輔助（115/10/06 美編：同昶勝軍德國 DM） ---------- */
+  /* ---------- DM 版面輔助（115/10/06 美編：同德國 DM） ---------- */
   var CN_NUM = '一二三四五六七八九十';
   function splitPlanName(name, idx) {
     var s = String(name || '').trim();
@@ -720,16 +720,12 @@
     return h;
   }
   function agentParts(a) {
-    // 通訊處／單位鎖定：一律「富邦人壽 高秉通訊處・昶勝軍」，忽略連結／草稿中的 unit
-    var segs = String(DEFAULT_AGENT.unit).split(/[・·]/).map(function (s) { return s.trim(); }).filter(Boolean);
-    var team = segs.length > 1 ? segs[segs.length - 1] : '';
-    var org = segs.length > 1 ? segs.slice(0, -1).join('・') : String(DEFAULT_AGENT.unit);
+    // 不顯示通訊處／單位
     var name = String(a.name || '').trim();
     return {
-      // 「昶勝軍 王小明 業務員」；未填姓名 → 「昶勝軍」
-      line: name ? [team, name, String(a.title || '').trim()].filter(Boolean).join(' ') : (team || '昶勝軍'),
+      line: name ? [name, String(a.title || '').trim()].filter(Boolean).join(' ') : '',
       hasPerson: !!name,
-      org: '富邦人壽' + (org ? ' ' + org : '')
+      org: ''
     };
   }
   function disclaimerText(quote) {
@@ -979,10 +975,9 @@
 
   function renderFooter(quote) {
     var a = agentOf(quote), ap = agentParts(a);
-    return '<div class="sig-wrap"><img class="sig-logo" src="' + BRAND.logo + '" alt="' + esc(BRAND.logoAlt) + '" width="88" height="88">' +
+    return '<div class="sig-wrap">' +
       '<div class="sig-text"><div class="sig-kicker">您的專屬保險顧問</div>' +
-      '<div class="sig-name">' + esc(ap.line) + '</div>' +
-      '<div class="sig-unit">' + esc(ap.org) + '</div></div>' +
+      (ap.line ? '<div class="sig-name">' + esc(ap.line) + '</div>' : '') + '</div>' +
       (a.phone ? '<a class="sig-phone" href="' + esc(telHref(a.phone)) + '">☎ ' + esc(a.phone) + '</a>' : '') +
       '</div><div class="sig-disc">' + esc(disclaimerText(quote)) + '</div>';
   }

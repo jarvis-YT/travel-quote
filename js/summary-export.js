@@ -60,10 +60,10 @@
     // 主要保障比較（DM 表格樣式）
     h += '<section class="sum-cmp"><div class="sum-sec-title">主要保障比較<small>— 表示不含此項保障</small></div>' +
       TQ.compareTableHtml(quote, { inconv: 6 }) + '</section>';
-    // 簽名（同 DM：深藍漸層＋金邊＋圓形 logo＋電話膠囊）
+    // 簽名（同 DM：深藍漸層＋金邊＋電話膠囊）
     h += '<footer class="sum-foot">';
-    h += '<div class="sum-foot-row"><img class="sum-foot-logo" src="' + TQ.BRAND.logo + '" alt="" width="84" height="84">';
-    h += '<div class="who"><div class="u">您的專屬保險顧問</div><div class="n">' + TQ.esc(ap.line) + '</div><div class="o">' + TQ.esc(ap.org) + '</div></div>';
+    h += '<div class="sum-foot-row">';
+    h += '<div class="who"><div class="u">您的專屬保險顧問</div>' + (ap.line ? '<div class="n">' + TQ.esc(ap.line) + '</div>' : '') + '</div>';
     if (a.phone) h += '<div class="ph">☎ ' + TQ.esc(a.phone) + '</div>';
     h += '</div>';
     h += '<div class="note">' + TQ.esc(TQ.disclaimerText(quote)) + '</div>';

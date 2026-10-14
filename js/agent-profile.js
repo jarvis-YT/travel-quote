@@ -1,6 +1,6 @@
-/* 業務員資料（昶勝軍共用）：旅平險、意外險兩個報價工具同網域（jarvis-yt.github.io；115/10/12 搬家），
+/* 業務員資料（共用）：旅平險、意外險兩個報價工具同網域（jarvis-yt.github.io；115/10/12 搬家），
  * 共用同一個 localStorage key，任一工具填一次、另一工具自動帶入。
- * 品牌固定：富邦人壽 高秉通訊處・昶勝軍；姓名／職級／電話由各業務員自行填寫（只存在自己的瀏覽器）。 */
+ * 姓名／職級／電話由各業務員自行填寫（只存在自己的瀏覽器）。 */
 (function (g) {
   'use strict';
   var KEY = 'cs-agent-profile-v1';
@@ -21,9 +21,9 @@
       g.history.replaceState(null, '', g.location.pathname + (qs ? '?' + qs : '') + g.location.hash);
     }
   } catch (e) {}
-  var TEAM = '昶勝軍';
-  var ORG = '富邦人壽 高秉通訊處';
-  var UNIT = '高秉通訊處・昶勝軍';
+  var TEAM = '';
+  var ORG = '';
+  var UNIT = '';
   /** 富邦人壽業務職級（常見稱謂）；可自由輸入 */
   var TITLES = ['業務員', '業務主任', '主任', '業務襄理', '襄理', '業務經理', '經理', '區經理', '資深區經理', '處經理', '總監'];
   /** 範例（虛構，非真實業務員） */
@@ -55,12 +55,12 @@
   }
   function isSample(a) { a = sanitize(a); return !!a.name && a.name === SAMPLE.name && telDigits(a.phone) === telDigits(SAMPLE.phone); }
   function phoneLooksOdd(a) { var d = telDigits(sanitize(a).phone).replace(/^\+886/, '0'); return !!d && (d.length < 9 || d.length > 12); }
-  /** 「昶勝軍 王小明 業務員」；沒填姓名 → 只顯示「昶勝軍」 */
-  function line(a) { a = sanitize(a); return a.name ? [TEAM, a.name, a.title].filter(Boolean).join(' ') : TEAM; }
+  /** 「王小明 業務員」；沒填姓名 → 空白 */
+  function line(a) { a = sanitize(a); return a.name ? [a.name, a.title].filter(Boolean).join(' ') : ''; }
   /** 檢查訊息（給編輯器的送出前檢查） */
   function problems(a) {
     var out = [], m = missing(a);
-    if (m.length) out.push({ level: 'err', msg: '業務員資料尚未填寫' + m.join('、') + '：客戶頁／圖片將只顯示「昶勝軍」' + (m.indexOf('電話') >= 0 ? '、沒有撥號按鈕' : '') + '。請在最上方「業務員資料」填寫（填一次，旅平險與意外險共用）。' });
+    if (m.length) out.push({ level: 'err', msg: '業務員資料尚未填寫' + m.join('、') + '：客戶頁／圖片將不會顯示業務員姓名' + (m.indexOf('電話') >= 0 ? '、沒有撥號按鈕' : '') + '。請在最上方「業務員資料」填寫（填一次，旅平險與意外險共用）。' });
     if (isSample(a)) out.push({ level: 'err', msg: '業務員資料仍是範例（' + SAMPLE.name + '），傳給客戶前請改成您自己的姓名與電話。' });
     if (phoneLooksOdd(a)) out.push({ level: 'warn', msg: '業務員電話「' + sanitize(a).phone + '」位數看起來不對，請確認。' });
     return out;
@@ -79,7 +79,7 @@
         opts.status.textContent = '✓ 客戶頁、圖片署名：' + line(a) + '　☎ ' + a.phone;
       } else {
         opts.status.className = 'agent-status ' + pr[0].level;
-        opts.status.textContent = '⚠ ' + (missing(a).length ? '送出前請填寫：' + missing(a).join('、') + '（未填時客戶頁只顯示「昶勝軍」）' : pr[0].msg);
+        opts.status.textContent = '⚠ ' + (missing(a).length ? '送出前請填寫：' + missing(a).join('、') + '（未填時客戶頁不顯示業務員）' : pr[0].msg);
       }
       if (opts.card) opts.card.classList.toggle('is-missing', missing(a).length > 0 || isSample(a));
     }

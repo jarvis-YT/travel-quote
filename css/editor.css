@@ -159,7 +159,7 @@ input.is-domestic { border-color: #c62828 !important; box-shadow: 0 0 0 2px rgba
   .ed-title .ed-internal { margin: 3px 0 0; }
 }
 
-/* ===== 昶勝軍版 ===== */
+/* ===== 版面 ===== */
 .ed-logo { width: 42px; height: 42px; border-radius: 50%; }
 .plan-kind { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
 .kind-chk {
